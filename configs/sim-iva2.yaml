@@ -1,0 +1,15 @@
+dataset: "siva"
+# mask_name: 'ukb2907-smri-aal2'
+subspace: "iva" # [2,4]
+eta: [1]
+beta: [0.5]
+lam: [1.102657790843584]
+input_dim: [12, 12, 12]
+output_dim: []
+
+special:
+  nRuns: 1
+  epochs: 1
+  batch_size: 300
+  lr: 0.0265
+  adam_betas: [0.95, 0.81]

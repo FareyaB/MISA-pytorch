@@ -138,4 +138,13 @@ dmypy.json
 *.mat
 *.m
 
+# Python files
+*.pt
+*.p
+*.npy
+
+# SLURM job files
+*.err
+*.out
+
 .DS_Store

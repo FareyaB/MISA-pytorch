@@ -4,11 +4,12 @@ subspace: "iva" # [2,4]
 eta: [1]
 beta: [0.5]
 lam: [1.102657790843584]
-input_dim: [30, 30, 30]
-output_dim: [30, 30, 30]
+input_dim: [12, 12, 12]
+output_dim: []
 
 special:
   nRuns: 1
-  epochs: 500
-  batch_size: 2907
-  lr: 0.0005
+  epochs: 800
+  batch_size: 200
+  lr: 0.007
+  adam_betas: [0.95, 0.87]

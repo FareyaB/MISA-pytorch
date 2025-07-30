@@ -33,7 +33,7 @@ def parse_sim():
 
 def make_dirs_simulations(args):
     os.makedirs(args.run, exist_ok=True)
-    args.checkpoints = os.path.join(args.run, 'checkpoints', args.config.split('.')[0])
+    args.checkpoints = os.path.join(args.run, 'checkpoints')
     os.makedirs(args.checkpoints, exist_ok=True)
 
 
@@ -62,6 +62,7 @@ if __name__ == '__main__':
         new_config.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         
         r = run_misa(args, new_config)
+        """
         for k, v in r.items():
             if type(v) == list:
                 vcpu=[]
@@ -71,7 +72,7 @@ if __name__ == '__main__':
                     for i, j in enumerate(v[0]):
                         vcpu.append(j.detach().cpu().numpy())
                 r[k] = vcpu
-        
+        """
         # save results
         # runner loops over many seeds, so the saved file contains results from multiple runs
         if args.test:

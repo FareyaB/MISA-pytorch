@@ -1,13 +1,12 @@
 import os
-import numpy as np
+import torch
 import mat73
+import numpy as np
 import scipy.io as sio
-
-from model.misa_wrapper import MISA_wrapper
 from dataset.dataset import Dataset
 from torch.utils.data import DataLoader
-import torch
 from scipy.stats import loguniform
+from model.misa_wrapper import MISA_wrapper
 
 class loguniform_int:
     """Integer valued version of the log-uniform distribution"""
@@ -104,14 +103,9 @@ def run_misa(args, config):
     else:
         lr = loguniform.rvs(0.00001, 0.1, size=1)[0]
     
-    # results = {l: {n: [] for n in data_seed} for l in n_layers}
+    if config.special.adam_betas != []:
+        adam_betas = config.special.adam_betas
 
-    # recovered_sources = {l: {n: [] for n in data_seed} for l in n_layers}
-    recovered_sources = []
-    final_MISIs = []
-
-    # for l in n_layers:
-    #     for n in data_seed:
     if data.lower() == 'mat':
         # load the data
         # matfile = os.path.join('./simulation_data', 'sim-{}.mat'.format(config.dataset))
@@ -119,7 +113,8 @@ def run_misa(args, config):
         ds=Dataset(data_in=matfile, device=device)
         if len(ds) < batch_size:
             batch_size = len(ds)
-        train_data=DataLoader(dataset=ds, batch_size=batch_size, shuffle=True)
+        train_data200=DataLoader(dataset=ds, batch_size=200, shuffle=True)
+        train_data300=DataLoader(dataset=ds, batch_size=300, shuffle=True)
         test_data=DataLoader(dataset=ds, batch_size=len(ds), shuffle=False)
         
         try:
@@ -185,37 +180,46 @@ def run_misa(args, config):
             pass
         elif mask_name.lower() in ['ukb2907-smri-aal2']:
             pass
+    
+    recovered_sources = []
+    training_losses = []
+    training_MISIs = []
 
     for seed in range(nRuns):
         # print('Running exp with L={} and n={}; seed={}'.format(l, n, seed))
         
         if data.lower() == 'mat':
             # ckpt_file = os.path.join(args.checkpoints, 'misa_{}_{}_s{}.pt'.format(data, config.dataset, seed))
-            ckpt_file = os.path.join(args.checkpoints, 'misa_{}_{}_{}_s{}.pt'.format(data.lower(), data_filename.split('.')[0], w, seed))
+            data_filename_prefix = data_filename.split('.')[0]
+            ckpt_file = os.path.join(args.checkpoints, f'misa_{data.lower()}_{data_filename_prefix}_{w}_seed{seed}_lr{lr}_bs{batch_size}_ab1{adam_betas[0]}_ab2{adam_betas[1]}.pt')
+            # ckpt_file = os.path.join(args.checkpoints, "combined.pt")
         # else:
         #     ckpt_file = os.path.join(args.checkpoints, 'misa_{}_{}_s{}.pt'.format(data, mask_name, seed))
-        recov_sources, final_MISI = MISA_wrapper(data_loader=train_data,
-                                     index=index,
-                                     subspace=subspace, 
-                                     eta=eta, 
-                                     beta=beta, 
-                                     lam=lam,
-                                     input_dim=input_dim, 
-                                     output_dim=output_dim, 
-                                     seed=seed,
-                                     epochs=epochs,
-                                     lr=lr,
-                                     weights=initial_weights,
-                                     A=ground_truth_A,
-                                     device=device,
-                                     ckpt_file=ckpt_file,
-                                     test=test,
-                                     test_data_loader=test_data)
+        recov_sources, training_loss, training_MISI = MISA_wrapper(data_loader=train_data200,
+                                                                    index=index,
+                                                                    subspace=subspace, 
+                                                                    eta=eta, 
+                                                                    beta=beta, 
+                                                                    lam=lam,
+                                                                    input_dim=input_dim, 
+                                                                    output_dim=output_dim, 
+                                                                    seed=seed,
+                                                                    epochs=epochs,
+                                                                    lr=lr,
+                                                                    adam_betas=adam_betas,
+                                                                    weights=initial_weights,
+                                                                    A=ground_truth_A,
+                                                                    device=device,
+                                                                    ckpt_file=ckpt_file,
+                                                                    test=test,
+                                                                    test_data_loader=test_data,
+                                                                    train_data_loader2=train_data300)
         
         # store results
         # recovered_sources[l][n].append(recov_sources)
         recovered_sources.append(recov_sources)
-        final_MISIs.append(final_MISI)
+        training_losses.append(training_loss)
+        training_MISIs.append(training_MISI)
 
         # if mask_name.lower() in ['ukb2907-smri-aal2']:
         #     continue
@@ -225,7 +229,6 @@ def run_misa(args, config):
 
     # prepare output
     if data.lower() == 'mat':
-        pass
         Results = {
             # 'input_dim': input_dim,
             # 'CorrelationCoef': results,
@@ -233,7 +236,8 @@ def run_misa(args, config):
             'lr': lr,
             'epochs': epochs,
             'batch_size': batch_size,
-            'final_MISIs': final_MISIs}
+            'loss': training_losses, 
+            'MISI': training_MISIs}
     # else:
     #     if mask_name.lower() in ['simtb16']:
     #         Results = {

@@ -79,6 +79,7 @@ class MISA(nn.Module):
                 if ix.start < ix.stop:
                     y_sub[:, ix] = self.output[mm][:,self.subspace[mm][kk, :] == 1]
                 tot = tot + self.d_k[mm][kk].int()
+            # TODO yyT is not full-rank sometimes
             yyT = y_sub.T @ y_sub
             g_k = torch.pow(torch.diag(yyT), -.5)
             g2_k = torch.pow(torch.diag(yyT), -1)
@@ -102,36 +103,66 @@ class MISA(nn.Module):
                 D = torch.linalg.eigvalsh(self.net[mm].weight @ self.net[mm].weight.T)
                 JD = JD - torch.sum(torch.log(torch.abs(torch.sqrt(D))))
         J = JE + JF + JC + JD + fc
+        # print(f'JE: {JE}, JF: {JF}, JC: {JC}, JD: {JD}, fc: {fc}')
         return J
 
-    def train_me(self, train_data, n_iter, learning_rate, A=None):
-        optim = torch.optim.Adam(self.parameters(), lr = learning_rate)
+    def train_me(self, train_data, n_epoch, learning_rate, betas=[0.95, 0.81], A=None, train_data2=None):
+        optim = torch.optim.Adam(self.parameters(), lr = learning_rate, betas=(betas[0], betas[1]))
         training_loss = []
-        batch_loss = []
         training_MISI = []        
         trigger_times = 0
         nn_weight_threshold = 1e-4
         loss_threshold = 0.1
         patience = 2
-        
-        for epochs in range(n_iter):
-            for i, data in enumerate(train_data, 0):
+        current_train_data = train_data
+
+        for epoch in range(n_epoch):
+            if epoch == 0 or epoch == 50 or epoch == 110:
+                betas = optim.param_groups[0]['betas']
+                print(f"epoch: {epoch}; adam learning rate: {learning_rate}; beta1: {betas[0]}; beta2: {betas[1]}; number of batches: {len(current_train_data)}")
+            batch_loss = []
+            for i, data in enumerate(current_train_data, 0):
+                if i == len(current_train_data)-1:
+                    break
                 optim.zero_grad()
                 self.forward(data)
                 loss = self.loss()
                 loss.backward()
                 optim.step()
-                batch_loss.append(loss.detach())
+                loss_np = float(loss.detach().cpu().numpy())
+                # print(i, loss_np)
+                batch_loss.append(loss_np)
             training_loss.append(batch_loss)
             
             if A is not None:
                 training_MISI.append(MISI([nn.weight.detach().cpu().numpy() for nn in self.net],A,[ss.detach().cpu().numpy() for ss in self.subspace])[0])
-                print('epoch: {} \tloss: {} \tMISI: {}'.format(epochs+1, loss.detach().cpu().numpy(), training_MISI[-1]))
+                print('epoch: {} \tloss: {} \tMISI: {}'.format(epoch+1, loss.detach().cpu().numpy(), training_MISI[-1]))
             else:
-                print('epoch: {} \tloss: {}'.format(epochs+1, loss.detach().cpu().numpy()))
+                print('epoch: {} \tloss: {}'.format(epoch+1, loss.detach().cpu().numpy()))
             
+            # combined setting for significant model
+            # if epoch == 49:
+            #     learning_rate = 0.0265
+            #     optim = torch.optim.Adam(self.parameters(), lr = learning_rate, betas=(0.95, 0.81))
+            #     current_train_data = train_data2
+            # elif epoch == 109:
+            #     learning_rate = 0.007
+            #     optim = torch.optim.Adam(self.parameters(), lr = learning_rate, betas=(0.95, 0.87))
+            #     current_train_data = train_data
+
+            # combined setting for full model
+            if epoch == 34:
+                learning_rate = 0.0290
+                optim = torch.optim.Adam(self.parameters(), lr = learning_rate, betas=(0.95, 0.8484))
+                current_train_data = train_data2
+            elif epoch == 124:
+                learning_rate = 0.0093
+                optim = torch.optim.Adam(self.parameters(), lr = learning_rate, betas=(0.9233, 0.87))
+                current_train_data = train_data2
+
+            """
             # early stop
-            if epochs == 0: 
+            if epoch == 0: 
                 nn_weight_current = [nn.weight.detach().cpu().numpy() for nn in self.net]
                 nn_weight_previous = copy.deepcopy(nn_weight_current)
                 loss_current = loss.detach().cpu().numpy()
@@ -151,7 +182,7 @@ class MISA(nn.Module):
                     trigger_times = 0
                 nn_weight_previous = copy.deepcopy(nn_weight_current)
                 loss_previous = loss_current
-
+            """
         return training_loss, training_MISI, optim
 
     def predict(self, test_data):
