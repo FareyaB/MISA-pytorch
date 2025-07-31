@@ -62,12 +62,12 @@ def append_csv(csv_path, experimenter, date_time, batch_size, learning_rate, wei
         if file_exists:
             writer.writerows([[experimenter, date_time, batch_size, learning_rate, weights, seed, patience, beta1, beta2, fused, foreach, run_time, epochs_completed, gpu, dataset_filename, running_data]])
         else:
-            writer.writerows([["experimenter","date_time", "batch_size", "learning_rate", "weights", "seed", "patience", "beta1", "beta2", "fused", "foreach", "run_time", "epochs_completed", "GPU", "dataset_filename", "running_data"]], 
-                [[experimenter, date_time, batch_size, learning_rate, weights, seed, patience, beta1, beta2, fused, foreach, run_time, epochs_completed, gpu, dataset_filename, running_data]])
+            writer.writerows([["experimenter","date_time", "batch_size", "learning_rate", "weights", "seed", "patience", "beta1", "beta2", "fused", "foreach", "run_time", "epochs_completed", "GPU", "dataset_filename", "running_data"], 
+                [experimenter, date_time, batch_size, learning_rate, weights, seed, patience, beta1, beta2, fused, foreach, run_time, epochs_completed, gpu, dataset_filename, running_data]])
 
 
 if __name__ == '__main__':
-    csv_path = "/data/users1/cmccurdy5/MISA-pytorch/results/MathPath2024/misa_results.csv"
+    csv_path = "/data/users3/fborhan1/MISA-pytorch/results/MathPath2024/misa_results.csv"
     date_time = datetime.datetime.now().strftime("%Y-%m-%d_T%H-%M-%S")
     start_time = datetime.datetime.now()
 

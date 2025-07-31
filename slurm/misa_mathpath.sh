@@ -6,7 +6,7 @@
 #SBATCH --chdir=/data/users3/fborhan1/MISA-pytorch
 #
 #SBATCH -p qTRDGPUH
-#SBATCH --gres=gpu:V100:1
+#SBATCH --gres=gpu:A100:1
 #SBATCH --account=trends53c17
 #SBATCH --job-name=MISAtorch
 #SBATCH --verbose
@@ -14,7 +14,7 @@
 #
 #SBATCH --nodes=1
 #SBATCH --mem=90g
-#SBATCH --cpus-per-task=10
+#SBATCH --cpus-per-task=20
 
 
 sleep 5s
@@ -26,7 +26,7 @@ conda activate pt2
 # seed=(7 14 21)
 # w=('wpca' 'w0' 'w1')
 
-declare -i SEED=7
+declare -i SEED=21
 echo $SEED
 W="wpca"
 echo $W
@@ -34,14 +34,16 @@ echo $W
 declare -i n_dataset=100
 declare -i n_source=12
 declare -i n_sample=32768
+
 lrs=(0.01)
-batch_size=(316)
+batch_size=(200)
 patience=(10)
 gpu=("A100")
 #Adam optimizer parameters
 adam_params=(0) #0 sets foreach and fused to false, 1 sets foreach=true and fused=false, 2 for foreach=false and fused=true
-beta1=(0.7)
-beta2=(0.65)
+beta1=(0.65)
+beta2=(0.81)
+
 
 experimenter="$USER"
 configuration="/data/users3/fborhan1/MISA-pytorch/configs/sim-siva.yaml"
@@ -52,3 +54,32 @@ for ((i=0; i<num_experiments; i++)); do
     sleep 5s
     wait 
 done
+
+DSD="2"
+
+# echo parameters, including variable name and value:
+echo ""
+echo "slurm_job_id: $SLURM_JOB_ID"
+echo "experimenter: $experimenter"
+echo "SEED: $SEED"
+echo "n_dataset: $n_dataset"
+echo "n_source: $n_source"
+echo "n_sample: $n_sample"
+echo "data_file: $data_file"
+echo "configuration: $configuration"
+echo "W: $W"
+echo "DSD: $DSD"
+echo "lrs: ${lrs[@]}"
+echo "batch_size: ${batch_size[@]}"
+echo "patience: ${patience[@]}"
+echo "gpu: ${gpu[@]}"
+echo "adam_params: ${adam_params[@]} #0 sets foreach and fused to false, 1 sets foreach=true and fused=false, 2 for foreach=false and fused=true"
+echo "beta1: ${beta1[@]}"
+echo "beta2: ${beta2[@]}"
+echo "hostname: $(hostname)"
+echo "date: $(date)"
+echo "pwd: $(pwd)"
+echo "slurm_job_name: $SLURM_JOB_NAME"
+echo "slurm_job_cpus_per_node: $SLURM_JOB_CPUS_PER_NODE"
+echo "slurm_job_partition: $SLURM_JOB_PARTITION"
+echo "slurm_job_mem: $SLURM_JOB_MEM"

@@ -56,13 +56,13 @@ def run_misa(args, config):
     beta2 = args.beta2
     batch_size = args.batch_size
     patience = args.patience 
-    if args.ff == 0:
+    if args.adam_params == 0:
         fused = False
         foreach = False
-    elif args.ff == 1:
+    elif args.adam_params == 1:
         fused = False
         foreach = True
-    elif args.ff == 2:
+    elif args.adam_params == 2:
         fused = True
         foreach = False
 
