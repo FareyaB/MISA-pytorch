@@ -150,6 +150,8 @@ class Dataset(data.Dataset):
             for i in range(self.num_modal):
                 data_out.append(torch.tensor(self.mat_data[i][index,:], dtype=torch.float32, device=self.device))
 
+        return data_out
+
 
 if __name__ == '__main__':
     rootpath="/Users/xli77/Documents/MISA-pytorch/simulation_data"
