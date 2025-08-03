@@ -49,21 +49,7 @@ def run_misa(args, config):
     data = args.data
     data_filename = args.filename
     w = args.weights
-    if isinstance(w, str) and os.path.isfile(w):
-        if w.endswith('.pkl'):
-            with open(w, 'rb') as f:
-                W = pickle.load(f)
-        elif w.endswith('.npy') or w.endswith('.npz'):
-            W = np.load(w)
-            if isinstance(W, np.lib.npyio.NpzFile):  # Handle .npz
-                W = W['arr_0']  # default key
-        else:
-            raise ValueError("Unsupported weight file format: {}".format(w))
-
-        # Step 3: Convert to list of torch tensors
-        weights = [torch.tensor(W[m]) for m in range(W.shape[0])]
-    else:
-        weights = w
+    initial_weights = []
 
     test = args.test
     A_exist = args.a_exist
@@ -197,6 +183,23 @@ def run_misa(args, config):
             pass
         elif mask_name.lower() in ['ukb2907-smri-aal2']:
             pass
+    
+    if initial_weights == []:
+        if isinstance(w, str) and os.path.isfile(w):
+            if w.endswith('.pkl'):
+                with open(w, 'rb') as f:
+                    W = pickle.load(f)
+            elif w.endswith('.npy') or w.endswith('.npz'):
+                W = np.load(w)
+                # if isinstance(W, np.lib.npyio.NpzFile):  # Handle .npz
+                #     W = W['arr_0']  # default key
+            else:
+                raise ValueError("Unsupported weight file format: {}".format(w))
+
+            # Conversion to torch Tensor happens in MISAK.py init
+            initial_weights = [W[m] for m in range(W.shape[0])]
+        # else:
+        #     initial_weights = w
     
     recovered_sources = []
     training_losses = []

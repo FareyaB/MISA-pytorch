@@ -102,7 +102,7 @@ class Dataset(data.Dataset):
 
                     X = load_and_mask_nii(fnames, self.maskfname)
 
-                    self.nii_data = [torch.from_numpy(X[m].T for m in range(X.shape[0]))] #, dtype=torch.float32)]
+                    self.nii_data = [torch.from_numpy(X[m].T) for m in range(X.shape[0])] #, dtype=torch.float32)]
                     self.num_modal = len(self.nii_data)
                     
                     
@@ -137,9 +137,9 @@ class Dataset(data.Dataset):
 
         data_out=list()
         if self.mat_data == []:
-            if self.nii_data == []
+            if self.nii_data == []:
                 for m in range(self.num_modal):
-                    data_out.append(self.nii_data[m][index,:].to(self.device)
+                    data_out.append(self.nii_data[m][index,:].to(self.device))
             else:
                 # list of .nii files 
                 # (likely multimodal, one file per subject)
