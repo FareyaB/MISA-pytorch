@@ -26,7 +26,7 @@ def MISA_wrapper(data_loader, index, subspace, eta, beta, lam, input_dim, output
     final_MISI = []
     
     if not test:
-        training_loss, training_MISI, optimizer = model.train_me(data_loader, epochs, lr, adam_betas, A, train_data_loader2)
+        training_loss, training_MISI, optimizer, final_weights = model.train_me(data_loader, epochs, lr, adam_betas, A, train_data_loader2)
         if len(training_MISI) > 0:
             final_MISI = training_MISI[-1]
         
@@ -46,6 +46,9 @@ def MISA_wrapper(data_loader, index, subspace, eta, beta, lam, input_dim, output
                 'test_loss': test_loss},
                ckpt_file)
         print("Saved checkpoint to: " + ckpt_file)
+
+        np.save(os.path.join(os.path.dirname(ckpt_file), 'final_weights.npy'), final_weights)
+        print("Saved final weights to: " + os.path.join(os.path.dirname(ckpt_file), 'final_weights.npy'))
 
     else:
         checkpoint = torch.load(ckpt_file)

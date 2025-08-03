@@ -1,0 +1,3 @@
+/data/mialab2/competition2019/UKBiobank/fetch/results/extracted_fMRI/1001211_20227_2_0/SmNpnormalize_direct.nii
+/data/mialab2/competition2019/UKBiobank/fetch/results/extracted_fMRI/1001523_20227_2_0/SmNpnormalize_direct.nii
+/data/mialab2/competition2019/UKBiobank/fetch/results/extracted_fMRI/1001846_20227_2_0/SmNpnormalize_direct.nii

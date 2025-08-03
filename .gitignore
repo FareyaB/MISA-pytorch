@@ -1,6 +1,9 @@
 # Other
 .vscode/
 run/
+runs/
+results/
+slurm_logs/
 model/__pycache__/
 model/__pycache__
 # Byte-compiled / optimized / DLL files

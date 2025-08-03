@@ -13,7 +13,7 @@ def mask_data_faster(img, mask):
     mask: boolean numpy array (same spatial shape as img)
     Returns: T x V matrix (time x voxels selected by mask)
     """
-    container = nib.Nifti1Image.get_fdata(img, dtype=np.float64)
+    container = nib.Nifti1Image.get_fdata(img, dtype=np.float32)
     return container[mask].T  # T x V
 
 def load_and_mask_nii(fnames, maskfname):
@@ -30,7 +30,8 @@ def load_and_mask_nii(fnames, maskfname):
     # Load each subject image and apply mask
     imgs = [nib.load(fname) for fname in fnames]
     # Each output is T x V; stack into (subjects x time x voxels)
-    X = np.stack([mask_data_faster(img, mask) for img in imgs])
+    X = np.stack([mask_data_faster(img, mask) for img in imgs], dtype=np.float32)
+    # print(X.dtype)
     return X  # subjects x time x voxels
 
 def load_nii(mri_dir, mri_file):
@@ -59,7 +60,7 @@ def load_nii(mri_dir, mri_file):
     return mri_nii, mri
 
 class Dataset(data.Dataset):
-    def __init__(self, data_in=None, num_modal=3, device='cpu', maskfname=None):
+    def __init__(self, data_in=None, num_modal=3, device='cpu', maskfname=None, w_reduce=None):
         super(Dataset, self).__init__()
 
         self.data_in = data_in
@@ -95,14 +96,17 @@ class Dataset(data.Dataset):
                 elif '.txt' in data_file:
                     if self.maskfname is None:
                         raise ValueError("maskfname must be provided when using a .txt subject list")
-                    txt_path = os.path.join(self.data_dir, self.data_file) #if not os.path.isabs(self.data_in) else self.data_in
+                    txt_path = os.path.join(self.data_dir, data_file) #if not os.path.isabs(self.data_in) else self.data_in
                     with open(txt_path, 'r') as f:
                         fnames = [line.strip() for line in f]#.readlines()]
                         fnames = [fname.replace("'", "").replace('"', '') for fname in fnames]
 
                     X = load_and_mask_nii(fnames, self.maskfname)
+                    if w_reduce is not None:
+                        W = np.load(w_reduce).astype(np.float32)
+                        X = W[:X.shape[0]] @ X
 
-                    self.nii_data = [torch.from_numpy(X[m].T) for m in range(X.shape[0])] #, dtype=torch.float32)]
+                    self.nii_data = [torch.from_numpy(X[m].T) for m in range(X.shape[0])]
                     self.num_modal = len(self.nii_data)
                     
                     
@@ -127,8 +131,10 @@ class Dataset(data.Dataset):
 
     def __len__(self):
         if self.mat_data != []:
+            # print(self.mat_data[0].shape)
             return self.mat_data[0].shape[0]
         elif self.nii_data != []:
+            # print(self.nii_data[0].shape)
             return self.nii_data[0].shape[0]
         return len(self.data_files)
 
@@ -138,13 +144,13 @@ class Dataset(data.Dataset):
         data_out=list()
         if self.mat_data == []:
             if self.nii_data == []:
-                for m in range(self.num_modal):
-                    data_out.append(self.nii_data[m][index,:].to(self.device))
-            else:
                 # list of .nii files 
                 # (likely multimodal, one file per subject)
                 _, mri=load_nii(self.data_dir, self.data_files[index])
                 data_out.append(mri.to(self.device))
+            else:
+                for m in range(self.num_modal):
+                    data_out.append(self.nii_data[m][index,:].to(self.device))
         else:
             # .mat file
             for i in range(self.num_modal):

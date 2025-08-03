@@ -5,6 +5,7 @@ import random
 import numpy as np
 import scipy.io as sio
 from metrics.misi import MISI
+import time
 
 class MISA(nn.Module):
     def __init__(self, weights=list(), index=None, subspace=list(), beta=0.5, eta=1, lam=1, input_dim=list(), output_dim=list(), bias=False, seed=0, device='cpu'):
@@ -116,8 +117,9 @@ class MISA(nn.Module):
         patience = 2
         current_train_data = train_data
 
+        start_time = time.time()
         for epoch in range(n_epoch):
-            if epoch == 0 or epoch == 50 or epoch == 110:
+            if epoch == 0 or epoch == 35 or epoch == 125:
                 betas = optim.param_groups[0]['betas']
                 print(f"epoch: {epoch}; adam learning rate: {learning_rate}; beta1: {betas[0]}; beta2: {betas[1]}; number of batches: {len(current_train_data)}")
             batch_loss = []
@@ -125,6 +127,8 @@ class MISA(nn.Module):
                 if i == len(current_train_data)-1:
                     break
                 optim.zero_grad()
+                # print(type(data[0]), data[0].shape, data[0].dtype, data[0].device)
+                # print(type(self.net[0].weight), self.net[0].weight.shape, self.net[0].weight.dtype, self.net[0].weight.device)
                 self.forward(data)
                 loss = self.loss()
                 loss.backward()
@@ -136,9 +140,9 @@ class MISA(nn.Module):
             
             if A is not None:
                 training_MISI.append(MISI([nn.weight.detach().cpu().numpy() for nn in self.net],A,[ss.detach().cpu().numpy() for ss in self.subspace])[0])
-                print('epoch: {} \tloss: {} \tMISI: {}'.format(epoch+1, loss.detach().cpu().numpy(), training_MISI[-1]))
+                print('epoch: {} \tloss: {} \tMISI: {}'.format(epoch, loss.detach().cpu().numpy(), training_MISI[-1]))
             else:
-                print('epoch: {} \tloss: {}'.format(epoch+1, loss.detach().cpu().numpy()))
+                print('epoch: {} \tloss: {}'.format(epoch, training_loss[-1][-5:-1]))
             
             # combined setting for significant model
             # if epoch == 49:
@@ -160,30 +164,50 @@ class MISA(nn.Module):
                 optim = torch.optim.Adam(self.parameters(), lr = learning_rate, betas=(0.9233, 0.87))
                 current_train_data = train_data2
 
-            """
-            # early stop
-            if epoch == 0: 
-                nn_weight_current = [nn.weight.detach().cpu().numpy() for nn in self.net]
-                nn_weight_previous = copy.deepcopy(nn_weight_current)
-                loss_current = loss.detach().cpu().numpy()
-                loss_previous = loss_current
-            else:
-                nn_weight_current = [nn.weight.detach().cpu().numpy() for nn in self.net]
-                nn_weight_diff = np.max(np.array([np.max(np.abs(nn_weight_previous[i]-c)) for i, c in enumerate(nn_weight_current)]))
-                loss_current = loss.detach().cpu().numpy()
-                loss_diff = np.abs(loss_current-loss_previous)
-                if nn_weight_diff < nn_weight_threshold or loss_diff < loss_threshold:
-                    trigger_times += 1
-                    print(f'Trigger Times: {trigger_times}')
-                    if trigger_times > patience:
-                        print(f'Early stopping! \nThe maximum absolute difference of W matrix is less than {nn_weight_threshold} or that of loss is less than {loss_threshold} between the previous and current iteration for {trigger_times} iterations.')
-                        return training_loss, training_MISI, optim
-                else:
-                    trigger_times = 0
-                nn_weight_previous = copy.deepcopy(nn_weight_current)
-                loss_previous = loss_current
-            """
-        return training_loss, training_MISI, optim
+            
+            # # early stop
+            # if epoch == 0: 
+            #     nn_weight_current = [nn.weight.detach().cpu().numpy() for nn in self.net]
+            #     nn_weight_previous = copy.deepcopy(nn_weight_current)
+            #     loss_current = loss.detach().cpu().numpy()
+            #     loss_previous = loss_current
+            # else:
+            #     nn_weight_current = [nn.weight.detach().cpu().numpy() for nn in self.net]
+            #     nn_weight_diff = np.max(np.array([np.max(np.abs(nn_weight_previous[i]-c)) for i, c in enumerate(nn_weight_current)]))
+            #     loss_current = loss.detach().cpu().numpy()
+            #     loss_diff = np.abs(loss_current-loss_previous)
+            #     if nn_weight_diff < nn_weight_threshold or loss_diff < loss_threshold:
+            #         trigger_times += 1
+            #         print(f'Trigger Times: {trigger_times}')
+            #         if trigger_times > patience:
+            #             print(f'Early stopping! \nThe maximum absolute difference of W matrix ({nn_weight_diff}) is less than {nn_weight_threshold} or that of loss ({loss_diff}) is less than {loss_threshold}, between the previous and current iteration, for {trigger_times} iterations.')
+
+            #             end_time = time.time()
+            #             print(f"\nTraining finished in {end_time - start_time:.2f} seconds.\n")
+            #             print()
+
+            #             final_weights = []
+            #             for mm in range(self.index.stop)[self.index]:
+            #                 with torch.no_grad():
+            #                     final_weights.append(self.net[mm].weight.detach().cpu().numpy())
+            #             final_weights = np.stack(final_weights)
+            #             return training_loss, training_MISI, optim, final_weights
+            #     else:
+            #         trigger_times = 0
+            #     nn_weight_previous = copy.deepcopy(nn_weight_current)
+            #     loss_previous = loss_current
+            
+
+        end_time = time.time()
+        print(f"\nTraining finished in {end_time - start_time:.2f} seconds.\n")
+        print()
+
+        final_weights = []
+        for mm in range(self.index.stop)[self.index]:
+            with torch.no_grad():
+                final_weights.append(self.net[mm].weight.detach().cpu().numpy())
+        final_weights = np.stack(final_weights)
+        return training_loss, training_MISI, optim, final_weights
 
     def predict(self, test_data):
         test_loss = []

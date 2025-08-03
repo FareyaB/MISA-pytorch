@@ -59,28 +59,38 @@ if __name__ == '__main__':
         with open(os.path.join('configs', args.config), 'r') as f:
             config = yaml.safe_load(f)
         new_config = dict2namespace(config)
+        print('Cuda available: {}'.format(torch.cuda.is_available()))
         new_config.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         
         r = run_misa(args, new_config)
-        """
-        for k, v in r.items():
-            if type(v) == list:
-                vcpu=[]
-                if isinstance(v[0], (np.ndarray, np.generic) ):
-                    vcpu = v
-                else:
-                    for i, j in enumerate(v[0]):
-                        vcpu.append(j.detach().cpu().numpy())
-                r[k] = vcpu
-        """
+        
+        # for k, v in r.items():
+        #     if type(v) == list:
+        #         vcpu=[]
+        #         if isinstance(v[0], (np.ndarray, np.generic) ):
+        #             vcpu = v
+        #         else:
+        #             for i, j in enumerate(v):
+        #                 vcpu.append(j.detach().cpu().numpy())
+        #         r[k] = vcpu
+        
         # save results
         # runner loops over many seeds, so the saved file contains results from multiple runs
-        if args.test:
-            fname = os.path.join(args.run, 'res_' + args.filename.split('.')[0] + '_' + args.weights + '_test.p')
+        if args.data.lower() == 'mat':
+            data_file = args.filename.split('.')[0]
+            fnaming = f'misa_{new_config.subspace}_{args.data.lower()}_in-{data_file}_w-{args.weights}'
         else:
-            fname = os.path.join(args.run, 'res_' + args.filename.split('.')[0] + '_' + args.weights + '.p')
+            _, data_file=os.path.split(args.filename)
+            w_file = os.path.split(args.weights)[1].split('.')[0]
+            fnaming = f'misa_{new_config.subspace}_{args.data.lower()}_{new_config.output_filename_prefix}_in-{data_file.split(".")[0]}_w-{w_file}'
+        if args.test:
+            fname = os.path.join(args.run, 'res_' + fnaming + '_test.p')
+        else:
+            fname = os.path.join(args.run, 'res_' + fnaming + '.p')
 
         pickle.dump(r, open(fname, "wb"))
+        print('Saved results to: {}'.format(fname))
+        print('Done!')
 
     else:
         raise ValueError('Unsupported data {}'.format(args.data))
