@@ -1,4 +1,4 @@
-output_filename_prefix: "ukb-fmri-iva-100"
+output_filename_prefix: "ukb-fmri-iva-100-s5F"
 mask_name: "/data/mialab2/competition2019/UKBiobank/process/results/fmri_mask_generation_after_QC_etc/ica_analysisMask_intersect_NMKtemplate.nii" # 'ukb2907-smri-aal2'
 subspace: "iva" # [2,4]
 eta: [1]

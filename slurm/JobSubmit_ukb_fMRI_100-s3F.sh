@@ -5,17 +5,20 @@
 #SBATCH --mail-user=rsilva@gsu.edu
 #SBATCH --chdir=/data/users3/rsilva/MISA-pytorch
 #
-#SBATCH -p qTRDGPUH
-#SBATCH --gres=gpu:A100:1
+#SBATCH -p qTRDHM
 #SBATCH --account=trends53c17
 #SBATCH --job-name=torchMISA
 #SBATCH --verbose
 #SBATCH --time=7200
 #
 #SBATCH --nodes=1
-#SBATCH --mem=128g
-#SBATCH --cpus-per-task=24
-#SBATCH --nodelist=arctrddgxa004
+#SBATCH --mem=1280g
+#SBATCH --cpus-per-task=96
+#SBATCH --nodelist=arctrdhm002
+
+
+# Other options:
+# --gres=gpu:A100:1
 
 
 sleep 5s
@@ -44,9 +47,9 @@ experimenter="$USER"
 
 data_format="fMRI"
 
-data_file="./slurm/ukb_fMRIpaths_unaffected_3.txt"
+data_file="./slurm/ukb_fMRIpaths_unaffected_100.txt"
 
-configuration="ukb-fmri-iva.yaml"
+configuration="ukb-fmri-iva-100-s3F.yaml"
 
 W="/data/users3/rsilva/dask-iva/W_gpca_M100_K12_ukb_fMRI.npy"
 

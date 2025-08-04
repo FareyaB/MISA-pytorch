@@ -154,15 +154,15 @@ class MISA(nn.Module):
             #     optim = torch.optim.Adam(self.parameters(), lr = learning_rate, betas=(0.95, 0.87))
             #     current_train_data = train_data
 
-            # combined setting for full model
-            if epoch == 34:
-                learning_rate = 0.0290
-                optim = torch.optim.Adam(self.parameters(), lr = learning_rate, betas=(0.95, 0.8484))
-                current_train_data = train_data2
-            elif epoch == 124:
-                learning_rate = 0.0093
-                optim = torch.optim.Adam(self.parameters(), lr = learning_rate, betas=(0.9233, 0.87))
-                current_train_data = train_data2
+            # # combined setting for full model
+            # if epoch == 34:
+            #     learning_rate = 0.0290
+            #     optim = torch.optim.Adam(self.parameters(), lr = learning_rate, betas=(0.95, 0.8484))
+            #     current_train_data = train_data2
+            # elif epoch == 124:
+            #     learning_rate = 0.0093
+            #     optim = torch.optim.Adam(self.parameters(), lr = learning_rate, betas=(0.9233, 0.87))
+            #     current_train_data = train_data2
 
             
             # # early stop

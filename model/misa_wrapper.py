@@ -47,8 +47,9 @@ def MISA_wrapper(data_loader, index, subspace, eta, beta, lam, input_dim, output
                ckpt_file)
         print("Saved checkpoint to: " + ckpt_file)
 
-        np.save(os.path.join(os.path.dirname(ckpt_file), 'final_weights.npy'), final_weights)
-        print("Saved final weights to: " + os.path.join(os.path.dirname(ckpt_file), 'final_weights.npy'))
+        fnaming = os.path.split(ckpt_file)[1].split('.')[0]
+        np.save(os.path.join(os.path.dirname(ckpt_file), f'{fnaming}_final-weights.npy'), final_weights)
+        print("Saved final weights to: " + os.path.join(os.path.dirname(ckpt_file), f'{fnaming}_final-weights.npy'))
 
     else:
         checkpoint = torch.load(ckpt_file)
