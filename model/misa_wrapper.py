@@ -26,12 +26,25 @@ def MISA_wrapper(data_loader, index, subspace, eta, beta, lam, input_dim, output
     final_MISI = []
     
     if not test:
+        test_loss = model.predict(test_data_loader)
+        print(f"\nINITIAL test loss: {test_loss[0].numpy():.3f}\n")
+
+        print("Initial weights:")
+        print(f"mm = 0: {model.net[0].weight[:3,:4]}")
+        print(f"mm = 1: {model.net[1].weight[:3,:4]}")
+        print()
+
         training_loss, training_MISI, optimizer, final_weights = model.train_me(data_loader, epochs, lr, adam_betas, A, train_data_loader2)
         if len(training_MISI) > 0:
             final_MISI = training_MISI[-1]
         
         test_loss = model.predict(test_data_loader)
-        print(f"test loss: {test_loss[0].numpy():.3f}")
+        print(f"\nFINAL test loss: {test_loss[0].numpy():.3f}\n")
+
+        print("Final weights:")
+        print(f"mm = 0: {model.net[0].weight[:3,:4]}")
+        print(f"mm = 1: {model.net[1].weight[:3,:4]}")
+        print()
 
         torch.save({'model': model.state_dict(),
                 'optimizer': optimizer.state_dict(),
@@ -47,7 +60,7 @@ def MISA_wrapper(data_loader, index, subspace, eta, beta, lam, input_dim, output
                ckpt_file)
         print("Saved checkpoint to: " + ckpt_file)
 
-        fnaming = os.path.split(ckpt_file)[1].split('.')[0]
+        fnaming = os.path.split(ckpt_file)[1].split('.pt')[0]
         np.save(os.path.join(os.path.dirname(ckpt_file), f'{fnaming}_final-weights.npy'), final_weights)
         print("Saved final weights to: " + os.path.join(os.path.dirname(ckpt_file), f'{fnaming}_final-weights.npy'))
 

@@ -49,7 +49,7 @@ data_format="fMRI"
 
 data_file="./slurm/ukb_fMRIpaths_unaffected_100.txt"
 
-configuration="ukb-fmri-iva-100-s7F.yaml"
+configuration="ukb-fmri-iva-100-s7F-800epochs.yaml"
 
 W="/data/users3/rsilva/dask-iva/W_gpca_M100_K12_ukb_fMRI.npy"
 

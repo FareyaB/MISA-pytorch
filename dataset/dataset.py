@@ -87,10 +87,11 @@ class Dataset(data.Dataset):
                 if '.mat' in data_file:
                     try:
                         mat_file = sio.loadmat(self.data_in)
+                        self.mat_data=np.squeeze(mat_file['X'])
                     except:
                         mat_file = mat73.loadmat(self.data_in) # MATLAB -v7.3 usually for data > 2GB
                     # Expect 'X' key containing modal data
-                    self.mat_data=[i.T for _, i in enumerate(np.squeeze(mat_file['X']))]
+                    self.mat_data=[i.T for _, i in enumerate(self.mat_data)]
                     self.num_modal=len(self.mat_data)
 
                 elif '.txt' in data_file:
@@ -103,7 +104,15 @@ class Dataset(data.Dataset):
 
                     X = load_and_mask_nii(fnames, self.maskfname)
                     if w_reduce is not None:
-                        W = np.load(w_reduce).astype(np.float32)
+                        if '.mat' in w_reduce:
+                            try:
+                                W = np.squeeze(sio.loadmat(w_reduce)['W']).transpose([-1,-3,-2])
+                            except:
+                                W = (mat73.loadmat(w_reduce)['W']).transpose([-1,-3,-2])
+                        elif '.npy' in w_reduce:
+                            W = np.load(w_reduce).astype(np.float32)
+                        else:
+                            raise ValueError(f"Unsupported w_reduce type: {w_reduce}")
                         X = W[:X.shape[0]] @ X
 
                     self.nii_data = [torch.from_numpy(X[m].T) for m in range(X.shape[0])]

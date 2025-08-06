@@ -72,10 +72,10 @@ echo "slurm_job_mem: $SLURM_MEM_PER_NODE"
 
 echo ""
 echo "Running MISA with the following command:"
-echo "python main.py --data $data_format --config $configuration --filename $data_file --run $results_path --weights $W"
+echo "python -u main.py --data $data_format --config $configuration --filename $data_file --run $results_path --weights $W"
 
 # Run the main script with the specified configuration, data file, results path, and W matrix:
-python main.py --data "$data_format" --config "$configuration" --filename "$data_file" --run "$results_path" --weights "$W"
+python -u main.py --data "$data_format" --config "$configuration" --filename "$data_file" --run "$results_path" --weights "$W"
 
 # python3 main.py -c /data/users4/xli/MISA/MISA-pytorch/configs/sim-iva.yaml -f sim-siva_dataset100_source12_sample32768_seed14.mat -r runs/BHI25/lr0.007_bs200_ab1-0.95_ab2-0.87 -w
 
