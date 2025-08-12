@@ -106,9 +106,9 @@ class Dataset(data.Dataset):
                     if w_reduce is not None:
                         if '.mat' in w_reduce:
                             try:
-                                W = np.squeeze(sio.loadmat(w_reduce)['W']).transpose([-1,-3,-2])
+                                W = np.squeeze(sio.loadmat(w_reduce)['W'])#.transpose([-1,-3,-2])
                             except:
-                                W = (mat73.loadmat(w_reduce)['W']).transpose([-1,-3,-2])
+                                W = (mat73.loadmat(w_reduce)['W'])#.transpose([-1,-3,-2])
                         elif '.npy' in w_reduce:
                             W = np.load(w_reduce).astype(np.float32)
                         else:

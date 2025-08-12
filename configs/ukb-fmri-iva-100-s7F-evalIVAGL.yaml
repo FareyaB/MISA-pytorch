@@ -1,0 +1,15 @@
+output_filename_prefix: "ukb-fmri-iva-100-s7F-evalIVAGL"
+mask_name: "/data/mialab2/competition2019/UKBiobank/process/results/fmri_mask_generation_after_QC_etc/ica_analysisMask_intersect_NMKtemplate.nii" # 'ukb2907-smri-aal2'
+subspace: "iva" # [2,4]
+eta: [1]
+beta: [0.5]
+lam: [1.102657790843584]
+input_dim: []
+output_dim: []
+
+special:
+  nRuns: 1
+  epochs: 5
+  batch_size: 200
+  lr: 0.1
+  adam_betas: [0.8990, 0.8154]
