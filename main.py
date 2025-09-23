@@ -78,11 +78,11 @@ if __name__ == '__main__':
         # runner loops over many seeds, so the saved file contains results from multiple runs
         if args.data.lower() == 'mat':
             data_file = args.filename.split('.')[0]
-            fnaming = f'misa_{new_config.subspace}_{args.data.lower()}_in-{data_file}_w-{args.weights}'
+            fnaming = f'misa_{new_config.subspace}_{args.data}_in-{data_file}_w-{args.weights}'
         else:
             _, data_file=os.path.split(args.filename)
             w_file = os.path.split(args.weights)[1].split('.')[0]
-            fnaming = f'misa_{new_config.subspace}_{args.data.lower()}_{new_config.output_filename_prefix}_in-{data_file.split(".")[0]}_w-{w_file}'
+            fnaming = f'misa_{new_config.subspace}_{args.data}_{new_config.output_filename_prefix}_in-{data_file.split(".")[0]}_w-{w_file}'
         if args.test:
             fname = os.path.join(args.run, 'res_' + fnaming + '_test.p')
         else:

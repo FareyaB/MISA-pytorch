@@ -252,10 +252,10 @@ def run_misa(args, config):
         if data.lower() == 'mat':
             # ckpt_file = os.path.join(args.checkpoints, 'misa_{}_{}_s{}.pt'.format(data, config.dataset, seed))
             data_filename_prefix = data_filename.split('.')[0]
-            ckpt_file = os.path.join(args.checkpoints, f'misa_{data.lower()}_{data_filename_prefix}_{w}_seed{seed}_lr-{lr}_bs{batch_size}_ab1{adam_betas[0]}_ab2{adam_betas[1]}.pt')
+            ckpt_file = os.path.join(args.checkpoints, f'misa_{data}_{data_filename_prefix}_{w}_in-{os.path.split(args.filename)[1].split(".")[0]}_w-{os.path.split(args.weights)[1].split(".")[0]}_seed{seed}_lr-{lr}_bs{batch_size}_ab1{adam_betas[0]}_ab2{adam_betas[1]}.pt')
             # ckpt_file = os.path.join(args.checkpoints, "combined.pt")
         else:
-            fnaming = f'misa_{subspace_name}_{data}_{config.output_filename_prefix}_seed{seed}_lr-{lr}_bs{batch_size}_ab1-{adam_betas[0]}_ab2-{adam_betas[1]}'
+            fnaming = f'misa_{subspace_name}_{data}_{config.output_filename_prefix}_in-{os.path.split(args.filename)[1].split(".")[0]}_w-{os.path.split(args.weights)[1].split(".")[0]}_seed{seed}_lr-{lr}_bs{batch_size}_ab1-{adam_betas[0]}_ab2-{adam_betas[1]}'
             ckpt_file = os.path.join(args.checkpoints, fnaming + '.pt')
 
         recov_sources, training_loss, training_MISI = MISA_wrapper(data_loader=train_data200,

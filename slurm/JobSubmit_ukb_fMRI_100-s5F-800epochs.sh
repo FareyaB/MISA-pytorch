@@ -14,7 +14,7 @@
 #SBATCH --nodes=1
 #SBATCH --mem=1280g
 #SBATCH --cpus-per-task=96
-#SBATCH --nodelist=arctrdhm002
+#SBATCH --nodelist=arctrdhm001
 
 
 # Other options:
@@ -49,7 +49,7 @@ data_format="fMRI"
 
 data_file="./slurm/ukb_fMRIpaths_unaffected_100.txt"
 
-configuration="ukb-fmri-iva-100-s3F.yaml"
+configuration="ukb-fmri-iva-100-s5F-800epochs.yaml"
 
 W="/data/users3/rsilva/dask-iva/W_gpca_M100_K12_ukb_fMRI.npy"
 
